@@ -1,15 +1,45 @@
 body {
-	margin-top: 40px;
-	text-align: center;
-	font-size: 13px;
-	font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+    margin-top: 40px;
+    text-align: center;
+    font-size: 13px;
+    font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
 }
 
-#calendar {
-	width: 900px;
-	margin: 0 auto;
+#calendar_wrapper {
+    width: 100%;
+    margin: 0 auto;
 }
 
-.class_canceled {
-	text-decoration: line-through;
+#loading {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#loading {
+    text-align: center;
+    vertical-align: middle;
+    z-index: 10;
+    margin: 220px auto;
+    opacity: 0.4;
+    filter:alpha(opacity=40); /* For IE8 and earlier */
+}
+
+#loading h1 {
+    color: black;
+}
+
+.helper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.HideCancel {
+    text-decoration: line-through;
+}
+
+.IsCanceled {
+    text-decoration: line-through;
 }
