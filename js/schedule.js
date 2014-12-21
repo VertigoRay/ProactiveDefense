@@ -1,112 +1,80 @@
-// jquery.xdomainajax.js  ------ from padolsey
-
-jQuery.ajax = (function(_ajax){
-
-    var protocol = location.protocol,
-        hostname = location.hostname,
-        exRegex = RegExp(protocol + '//' + hostname),
-        YQL = 'http' + (/^https/.test(protocol)?'s':'') + '://query.yahooapis.com/v1/public/yql?callback=?',
-        query = 'select * from html where url="{URL}" and xpath="*"';
-
-    function isExternal(url) {
-        return !exRegex.test(url) && /:\/\//.test(url);
-    }
-
-    return function(o) {
-        var url = o.url;
-        if ( /get/i.test(o.type) && !/json/i.test(o.dataType) && isExternal(url) ) {
-            // Manipulate options so that JSONP-x request is made to YQL
-            o.url = YQL;
-            o.dataType = 'json';
-            o.data = {
-                q: query.replace(
-                    '{URL}',
-                    url + (o.data ?
-                        (/\?/.test(url) ? '&' : '?') + jQuery.param(o.data)
-                    : '')
-                ),
-                format: 'xml'
-            };
-
-            // Since it's a JSONP request
-            // complete === success
-            if (!o.success && o.complete) {
-                o.success = o.complete;
-                delete o.complete;
-            }
-
-            o.success = (function(_success){
-                return function(data) {
-
-                    if (_success) {
-                        // Fake XHR callback.
-                        _success.call(this, {
-                            responseText: data.results[0]
-                                // YQL screws with <script>s
-                                // Get rid of them
-                                .replace(/<script[^>]+?\/>|<script(.|\s)*?\/script>/gi, '')
-                        }, 'success');
-                    }
-                };
-            })(o.success);
-        }
-
-        return _ajax.apply(this, arguments);
-    };
-
-})(jQuery.ajax);
-
 $(document).ready(function(text) {
-    // Pull event_list content ...
-    /*
-    $.ajax({
-        url: ('https:' == document.location.protocol ? 'https:' : 'http:') +'//proactivedefense.vertigion.com/schedule.json.php?html=1',
-        type: 'GET',
-        success: function(res) {
-            $('#event_list').html(res.responseText);
-        },
-        dataType: 'html'
-    });
-    */
+    if ($.cookie('is_mobile') == 1 && $.cookie('mobile_disable') == 0) {
+        // These cookies are set by weebly.com
 
-    $('#calendar').fullCalendar({
-        loading: function(bool) {
-          if (bool) 
-            $('#loading').show();
-          else 
-            $('#loading').hide();
-        },
-        header: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'month,agendaWeek,agendaDay'
-        },
-        height: 'auto',
-        eventSources: [
+        $('#calendar').fullCalendar({
+            loading: function(bool) {
+              if (bool) 
+                $('#loading').show();
+              else 
+                $('#loading').hide();
+            },
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            height: 'auto',
+            eventSources: [{
+                    url: ($(location).attr('host') != 'proactivedefense.vertigion.com' ? (('https:' == $(location).attr('protocol') ? 'https:' : 'http:') +'//proactivedefense.vertigion.com/prd/') : ($(location).attr('pathname').match("^/prd") ? '/prd/' : '/dev/' )) +'schedule.json.php',
+                    cache: true,
+                    method: 'POST',
+                    data: {
+                        mobile: 1
+                    },
+                    error: function() {
+                        alert('there was an error while fetching events!');
+                    },
+                }
+            ],
+            eventClick: function(event, jsEvent, view) {
+                element.qtip({
+                    content: {
+                        title: event.title + '<br /><i>'+ $.format.date(event.StartDateTime, "MMM d h:mm p") +' - '+ ($.format.date(event.StartDateTime, "MMddyyyy") == $.format.date(event.EndDateTime, "MMddyyyy") ? $.format.date(event.EndDateTime, "h:mm p") : $.format.date(event.EndDateTime, "MMM d h:mm p") ) +'</i>',
+                        text: (event.img != null ? '<img src="'+ event.img +'" alt="Class Image" style="text-align:center" />' : '') + event.description +'<hr /><a href="'+ event.url +'">Register</a>',
+                    },
+                    position: {
+                        my: 'center',
+                        at: 'center',
+                        target: $(window),
+                    },
+                });
+            }   
+        })
 
-            // your event source
-            {
-                url: ('https:' == document.location.protocol ? 'https:' : 'http:') +'//proactivedefense.vertigion.com/schedule.json.php',
-                cache: true,
-                type: 'POST',
-                data: {
-                    custom_param1: 'something',
-                    custom_param2: 'somethingelse'
-                },
-                error: function() {
-                    alert('there was an error while fetching events!');
-                },
-                // color: 'yellow',   // a non-ajax option
-                // textColor: 'black' // a non-ajax option
-            }
-        ],
-        eventRender: function(event, element) {
-            element.qtip({
-                content: {
-                    text: (event.img != null ? '<img src="'+ event.img +'" alt="Class Image" style="text-align:center" />' : '') + event.description,
-                    title: event.title + '<br /><i>'+ $.format.date(event.StartDateTime, "MMM d h:mm p") +' - '+ ($.format.date(event.StartDateTime, "MMddyyyy") == $.format.date(event.EndDateTime, "MMddyyyy") ? $.format.date(event.EndDateTime, "h:mm p") : $.format.date(event.EndDateTime, "MMM d h:mm p") ) +'</i>'
-                },
-            });
-        }   
-    })
+    } else {
+        $('#calendar').fullCalendar({
+            loading: function(bool) {
+              if (bool) 
+                $('#loading').show();
+              else 
+                $('#loading').hide();
+            },
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            height: 'auto',
+            eventSources: [{
+                    url: ($(location).attr('host') != 'proactivedefense.vertigion.com' ? (('https:' == $(location).attr('protocol') ? 'https:' : 'http:') +'//proactivedefense.vertigion.com/prd/') : ($(location).attr('pathname').match("^/prd") ? '/prd/' : '/dev/' )) +'schedule.json.php',
+                    cache: true,
+                    error: function() {
+                        alert('there was an error while fetching events!');
+                    },
+                }
+            ],
+            eventRender: function(event, element) {
+                element.qtip({
+                    content: {
+                        title: event.title + '<br /><i>'+ $.format.date(event.StartDateTime, "MMM d h:mm p") +' - '+ ($.format.date(event.StartDateTime, "MMddyyyy") == $.format.date(event.EndDateTime, "MMddyyyy") ? $.format.date(event.EndDateTime, "h:mm p") : $.format.date(event.EndDateTime, "MMM d h:mm p") ) +'</i>',
+                        text: (event.img != null ? '<img src="'+ event.img +'" alt="Class Image" style="text-align:center" />' : '') + event.description,
+                    },
+                    position: {
+                        viewport: true
+                    },
+                });
+            }   
+        })
+    }
 })
