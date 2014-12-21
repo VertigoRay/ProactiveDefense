@@ -58,15 +58,16 @@ jQuery.ajax = (function(_ajax){
 
 $(document).ready(function(text) {
     // Pull event_list content ...
-$.ajax({
-    url: 'http://proactivedefense.vertigion.com/schedule.json.php?html=1',
-    type: 'GET',
-    success: function(res) {
-        alert(res.responseText);
-        $('#event_list').html(res.responseText);
-    },
-    dataType: 'html'
-});
+    /*
+    $.ajax({
+        url: ('https:' == document.location.protocol ? 'https:' : 'http:') +'//proactivedefense.vertigion.com/schedule.json.php?html=1',
+        type: 'GET',
+        success: function(res) {
+            $('#event_list').html(res.responseText);
+        },
+        dataType: 'html'
+    });
+    */
 
     $('#calendar').fullCalendar({
         loading: function(bool) {
@@ -101,8 +102,11 @@ $.ajax({
         ],
         eventRender: function(event, element) {
             element.qtip({
-                content: (event.img != null ? '<img src="'+ event.img +'" alt="Class Image" />' : '') +'<pre>'+ event.description +'</pre>'
+                content: {
+                    text: (event.img != null ? '<img src="'+ event.img +'" alt="Class Image" style="text-align:center" />' : '') + event.description,
+                    title: event.title + '<br /><i>'+ $.format.date(event.StartDateTime, "MMM d h:mm p") +' - '+ ($.format.date(event.StartDateTime, "MMddyyyy") == $.format.date(event.EndDateTime, "MMddyyyy") ? $.format.date(event.EndDateTime, "h:mm p") : $.format.date(event.EndDateTime, "MMM d h:mm p") ) +'</i>'
+                },
             });
         }   
     })
-});
+})
